@@ -1,0 +1,121 @@
+template:
+  name: Terraform
+  identifier: Terraform
+  versionLabel: 0.0.1
+  type: Pipeline
+  orgIdentifier: cristian_italika_org
+  tags: {}
+  spec:
+    stages:
+      - stage:
+          name: Provisioning
+          identifier: Provisioning
+          description: ""
+          type: Custom
+          spec:
+            execution:
+              steps:
+                - stepGroup:
+                    name: Terraform Plan and Apply-Destroy
+                    identifier: Terraform_Plan_and_ApplyDestroy
+                    steps:
+                      - step:
+                          type: TerraformPlan
+                          name: TF Plan
+                          identifier: TF_Plan
+                          spec:
+                            configuration:
+                              command: Apply
+                              configFiles:
+                                store:
+                                  type: Github
+                                  spec:
+                                    gitFetchType: Branch
+                                    connectorRef: org.talika_platform-dev_github_connector
+                                    branch: <+input>
+                                    folderPath: <+input>
+                                    repoName: harness-italika-tf
+                              secretManagerRef: org.harnessSecretManager
+                              backendConfig:
+                                type: Inline
+                                spec:
+                                  content: |-
+                                    username = "admin"
+                                    password = "<+secrets.getValue(\"harness_connectors_crizstian_artifactory_token\")>"
+                                    url = "http://artifactory--se-latam-demo.harness-demo.site.harness-demo.site.harness-demo.site/artifactory"
+                                    repo     = "<+stage.variables.repo>"
+                                    subpath  = "<+stage.variables.subpath>"
+                              varFiles:
+                                - varFile:
+                                    identifier: terraform.tfvars
+                                    spec:
+                                      content: |-
+                                        harness_platform_api_key = "<+secrets.getValue(\"harness_platform_api_key\")>"
+                                        harness_platform_account_id = "<+secrets.getValue(\"harness_platform_account_id\")>"
+                                        harness_connectors_crizstian_github_token = "<+secrets.getValue(\"harness_connectors_crizstian_github_token\")>"
+                                        harness_connectors_crizstian_docker_token = "<+secrets.getValue(\"harness_connectors_crizstian_docker_token\")>"
+                                        harness_connectors_crizstian_artifactory_token = "<+secrets.getValue(\"harness_connectors_crizstian_artifactory_token\")>"
+                                    type: Inline
+                            provisionerIdentifier: <+input>
+                            delegateSelectors: <+input>
+                          timeout: 10m
+                          failureStrategies: []
+                      - step:
+                          type: HarnessApproval
+                          name: Approve
+                          identifier: Approve
+                          spec:
+                            approvalMessage: Please review the following information and approve the pipeline progression
+                            includePipelineExecutionHistory: true
+                            approvers:
+                              userGroups:
+                                - account.SE_Admin
+                              minimumCount: 1
+                              disallowPipelineExecutor: false
+                            approverInputs: []
+                          timeout: 1d
+                      - parallel:
+                          - step:
+                              type: TerraformApply
+                              name: TF Apply
+                              identifier: TF_Apply
+                              spec:
+                                configuration:
+                                  type: InheritFromPlan
+                                provisionerIdentifier: tf
+                                delegateSelectors: <+input>
+                              timeout: 10m
+                              when:
+                                stageStatus: Success
+                                condition: <+stage.variable.action> == "apply"
+                              failureStrategies: []
+                          - step:
+                              type: TerraformDestroy
+                              name: TF Destroy
+                              identifier: TF_Destroy
+                              spec:
+                                provisionerIdentifier: tf
+                                configuration:
+                                  type: InheritFromApply
+                                delegateSelectors: <+input>
+                              timeout: 10m
+                              when:
+                                stageStatus: Success
+                                condition: <+stage.variable.action> == "destroy"
+                              failureStrategies: []
+                    failureStrategies: []
+                    delegateSelectors:
+                      - italika_lab-gke-tf
+              rollbackSteps: []
+            serviceDependencies: []
+          tags: {}
+          variables:
+            - name: action
+              type: String
+              value: <+input>
+            - name: repo
+              type: String
+              value: <+input>
+            - name: subpath
+              type: String
+              value: <+input>
