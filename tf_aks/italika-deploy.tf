@@ -58,9 +58,7 @@ output "webserver_ids" {
   value = ["${aws_instance.webserver.*.id}"]
 }
 
-output "ip_addresses" {
-  value = ["${aws_instance.webserver.*.id}"]
-}
+
 
 resource "aws_key_pair" "ssh-key" {
   key_name   = "ssh-key"
@@ -78,10 +76,46 @@ resource "aws_instance" "webserver" {
   key_name                    = "ssh-key"
 }
 
+resource "aws_elb" "main" {
+  name               = "terraform-elb"
+  availability_zones = ["us-east-2a", "us-east-2b", "us-east-2c"]
+
+  listener {
+    instance_port     = 80
+    instance_protocol = "http"
+    lb_port           = 80
+    lb_protocol       = "http"
+  }
+
+  instances = [aws_instance.webserver.0.id]
+}
+
+resource "aws_route53_record" "www" {
+  zone_id = aws_route53_zone.primary.zone_id
+  name    = "terraform-lb"
+  type    = "A"
+
+  alias {
+    name                   = aws_elb.main.dns_name
+    zone_id                = aws_elb.main.zone_id
+    evaluate_target_health = true
+  }
+}
+
 resource "aws_route53_record" "server1-record" {
   zone_id = "Z04206741T94RD7FBT0G1"
   name    = "terraform"
   type    = "A"
   ttl     = "300"
   records = [aws_instance.webserver.0.public_ip]
+}
+
+
+output "ip_addresses" {
+  value = {
+    public_ip = aws_instance.webserver.0.public_ip
+    elb       = aws_elb.main.dns_name
+    tf        = "terraform.devopsday-harness.net"
+    tf_elb    = "terraform-lb.devopsday-harness.net"
+  }
 }
