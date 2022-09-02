@@ -73,7 +73,7 @@ resource "aws_instance" "webserver" {
 }
 
 resource "aws_route53_record" "server1-record" {
-  zone_id = Z04206741T94RD7FBT0G1
+  zone_id = "Z04206741T94RD7FBT0G1"
   name    = "terraform.devopsday-harness.net"
   type    = "A"
   ttl     = "300"
