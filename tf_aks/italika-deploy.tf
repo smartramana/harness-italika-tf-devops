@@ -59,15 +59,22 @@ output "webserver_ids" {
 }
 
 output "ip_addresses" {
-  value = ["${aws_instance.webserver.*.public_ip}"]
+  value = ["${aws_instance.webserver.public_ip}"]
 }
 
 resource "aws_instance" "webserver" {
   instance_type               = var.instance_type
   ami                         = "ami-05803413c51f242b7"
-  count                       = var.instance_count
   vpc_security_group_ids      = ["${aws_security_group.allow_ports.id}"]
   subnet_id                   = element(module.vpc.public_subnets, count.index)
   user_data                   = file("scripts/init.sh")
   associate_public_ip_address = true
+}
+
+resource "aws_route53_record" "server1-record" {
+  zone_id = Z04206741T94RD7FBT0G1
+  name    = "terraform.devopsday-harness.net"
+  type    = "A"
+  ttl     = "300"
+  records = [aws_instance.webserver.public_ip]
 }
