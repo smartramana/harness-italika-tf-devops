@@ -62,6 +62,11 @@ output "ip_addresses" {
   value = ["${aws_instance.webserver.*.id}"]
 }
 
+resource "aws_key_pair" "ssh-key" {
+  key_name   = "ssh-key"
+  public_key = "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQCxTw8+MwTcNU6bCo19plPEuQIA5pneOrxfhRd0UTgC5EzCznf1H6QUqBDaFHqDF5Fv4j2qONLbVH0ybTcX+o7ZL937aTgzwPMgsDeBvEWsuyqXSfYqIw8f1PZXxZlhAy6Aeg80uVeD8bRMen+q2IZJMnvYK2JMujE+Z6JakvVcBx6JRQbGUDgh0VVfhWJBbr1nTcOQJ1Mg7n7QMgwiOxAybzTr+WtgvpQCxJNOhZ+QgETOqZyjtojkp8SnkJs39B++1Pn1ADwm7AspUTT5iX3U/NCKDiXxz4mPv9+whlZv/qDSUQp98ZE4WOoT9J5nRHLFTn4r3AmAeCHDnfhxm6e6ylXl5+GI52H44MXqACTZjdjvo0LYGXEDhVJ4DDZS+/tmxXhnqAlPe9SLx34Hcg4OSmtgaEh2KuB2/ye/Ffb4xRd/0wswNhFGJVO4rNBAosqJPyScb6oOx9XIZxCdy8ncZi1/Q1Dq6RoIw3jUqy80G+3M2eXPrKK1dqetMuoz0ys= cristianramirez@MacBook-Pro-de-Cristian.local"
+}
+
 resource "aws_instance" "webserver" {
   instance_type               = var.instance_type
   ami                         = "ami-05803413c51f242b7"
@@ -70,6 +75,7 @@ resource "aws_instance" "webserver" {
   subnet_id                   = element(module.vpc.public_subnets, count.index)
   user_data                   = file("scripts/init.sh")
   associate_public_ip_address = true
+  key_name                    = "ssh-key"
 }
 
 resource "aws_route53_record" "server1-record" {
