@@ -79,7 +79,7 @@ resource "aws_instance" "webserver" {
 resource "aws_elb" "main" {
   name               = "terraform-elb"
   availability_zones = ["us-east-2a", "us-east-2b", "us-east-2c"]
-  subnets            = [element(module.vpc.public_subnets, count.index)]
+  subnets            = module.vpc.public_subnets
   listener {
     instance_port     = 80
     instance_protocol = "http"
