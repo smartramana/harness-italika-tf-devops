@@ -91,7 +91,7 @@ resource "aws_elb" "main" {
 }
 
 resource "aws_route53_record" "www" {
-  zone_id = aws_route53_zone.primary.zone_id
+  zone_id = "Z04206741T94RD7FBT0G1"
   name    = "terraform-lb"
   type    = "A"
 
