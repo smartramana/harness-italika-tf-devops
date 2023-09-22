@@ -48,42 +48,20 @@ pipeline:
                         name: TF Plan
                         identifier: TF_Plan
                         spec:
-                          configuration:
-                            command: Apply
-                            configFiles:
-                              store:
-                                type: Github
-                                spec:
-                                  gitFetchType: Branch
-                                  connectorRef: Italikagithub
-                                  repoName: harness-italika-microservice
-                                  branch: main
-                                  folderPath: harness-italika-bootstrap
-                            backendConfig:
-                              type: Inline
-                              spec:
-                                content: |-
-                                  username = "admin"
-                                  password = "<+secrets.getValue("org.harness_connectors_crizstian_artifactory_token")>"
-                                  url = "http://artifactory--se-latam-demo.harness-demo.site.harness-demo.site.harness-demo.site/artifactory"
-                                  repo = "Terraform-Backend"
-                                  subpath = "harness-italika-bootstrap-tf"
-                            varFiles:
-                              - varFile:
-                                  identifier: terraform.tfvars
-                                  spec:
-                                    content: |-
-                                      harness_platform_api_key = "<+secrets.getValue("org.harness_platform_api_key")>"
-                                      harness_platform_account_id = "<+secrets.getValue("org.harness_platform_account_id")>"
-                                      harness_connectors_crizstian_github_token = "<+secrets.getValue("org.harness_connectors_crizstian_github_token")>"
-                                      harness_connectors_crizstian_docker_token = "<+secrets.getValue("org.harness_connectors_crizstian_docker_token")>"
-                                      harness_connectors_crizstian_artifactory_token = "<+secrets.getValue("org.harness_connectors_crizstian_artifactory_token")>"
-                                  type: Inline
-                            secretManagerRef: harnessSecretManager
-                            skipRefreshCommand: false
                           provisionerIdentifier: tf
                           delegateSelectors:
                             - docker-delegate
+                          cloudCliConfiguration:
+                            command: Apply
+                            configFiles:
+                              store:
+                                spec:
+                                  connectorRef: account.Github
+                                  gitFetchType: Branch
+                                  repoName: harness-italika-tf-devops
+                                  branch: main
+                                  folderPath: harness-italika-bootstrap
+                                type: Github
                         timeout: 10m
                     - step:
                         type: HarnessApproval
