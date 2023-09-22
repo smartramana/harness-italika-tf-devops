@@ -59,7 +59,6 @@ pipeline:
                                   repoName: harness-italika-microservice
                                   branch: main
                                   folderPath: harness-italika-bootstrap
-                            secretManagerRef: harnessSecretManager
                             backendConfig:
                               type: Inline
                               spec:
@@ -80,11 +79,10 @@ pipeline:
                                       harness_connectors_crizstian_docker_token = "<+secrets.getValue("org.harness_connectors_crizstian_docker_token")>"
                                       harness_connectors_crizstian_artifactory_token = "<+secrets.getValue("org.harness_connectors_crizstian_artifactory_token")>"
                                   type: Inline
+                            secretManagerRef: harnessSecretManager
+                            skipRefreshCommand: false
                           provisionerIdentifier: tf
-                          delegateSelectors:
-                            - cristian-gke-tf
                         timeout: 10m
-                        failureStrategies: []
                     - step:
                         type: HarnessApproval
                         name: TF Approve
