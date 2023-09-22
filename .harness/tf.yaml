@@ -82,6 +82,8 @@ pipeline:
                             secretManagerRef: harnessSecretManager
                             skipRefreshCommand: false
                           provisionerIdentifier: tf
+                          delegateSelectors:
+                            - docker-delegate
                         timeout: 10m
                     - step:
                         type: HarnessApproval
